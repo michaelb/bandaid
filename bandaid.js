@@ -1,34 +1,30 @@
-const emdash = {
-  name: "emdash",
-  description: "em-dashes (—) characters are often used by AI, and few humans writers even know it exists, let alone how to type it",
-  weight: 100,
-  apply: function(text) {
-    return text.split("—").length - 1;
-  }
-}
+
 const rules = [
   emdash
 ];
 
 function judge(text_in) {
-  if (text_in.length < 32) {
+
+
+  let text = text_in.trim();
+  if (text.length < 32) {
     return 0; // don't judge short strings
   }
 
-  let text = text_in.trim();
-  console.log(text.length)
-
   let score = 0;
+  let weigth = 0;
+  // to compute a better probability of 'being AI-generated'
+  // with several 'OR' metrics, compute the reverse score (so it
+  // makes sense to add it up), and finally re-reverse it
   for (const rule of rules) {
-    console.log(rule.name);
-    score += rule.apply(text) * rule.weight;
+    score += (100 - rule.apply(text)) * rule.weight;
+    weigth += rule.weight;
   }
-  console.log(score * 100 / text.length);
-  return score * 100 / text.length;
+  return 100 - (score / weigth);
 }
 
 /**
- * Substitutes emojis into text nodes.
+ * Judge text nodes for AI-generated-ness
  * If the node contains more than just text (ex: it has child nodes),
  * call replaceText() on each of its children.
  *
@@ -36,42 +32,39 @@ function judge(text_in) {
  * @return {void}         - Note: the emoji substitution is done inline.
  */
 function replaceText(node) {
-  // Setting textContent on a node removes all of its children and replaces
-  // them with a single text node. Since we don't want to alter the DOM aside
-  // from substituting text, we only substitute on single text nodes.
-  // @see https://developer.mozilla.org/en-US/docs/Web/API/Node/textContent
+  // We don't want to alter the DOM aside for text-node markers
   if (node.nodeType === Node.TEXT_NODE) {
     // This node only contains text.
-    // @see https://developer.mozilla.org/en-US/docs/Web/API/Node/nodeType.
 
-    // Skip textarea nodes due to the potential for accidental submission
-    // of substituted emoji where none was intended.
+    // Skip textarea nodes
     if (node.parentNode &&
       node.parentNode.nodeName === 'TEXTAREA') {
       return;
     }
 
-    // Because DOM manipulation is slow, we don't want to keep setting
-    // textContent after every replacement. Instead, manipulate a copy of
-    // this string outside of the DOM and then perform the manipulation
-    // once, at the end.
     let content = node.textContent;
 
     // "percentage" of likeliness to be AI-generated (relatively arbitrary)
     let aid = judge(content);
 
     if (aid > 50) {
-      content = "(probably AI-generated)" + content;
+      // add a marker just before the text
+      let parentNode = node.parentNode;
+      let marker = document.createTextNode("⚠️");
+      parentNode.insertBefore(marker, node);
     }
 
-    // Now that all the replacements are done, perform the DOM manipulation.
-    node.textContent = content;
   }
   else {
     // This node contains more than just text, call replaceText() on each
-    // of its children.
+    // of its (original) children (don't run replaceText over nodes
+    // created in replaceText()! )
+    let originNodes = []
     for (let i = 0; i < node.childNodes.length; i++) {
-      replaceText(node.childNodes[i]);
+      originNodes.push(node.childNodes[i])
+    }
+    for (const node of originNodes) {
+      replaceText(node);
     }
   }
 }
@@ -79,7 +72,7 @@ function replaceText(node) {
 // Start the recursion from the body tag.
 replaceText(document.body);
 
-// Now monitor the DOM for additions and substitute emoji into new nodes.
+// Now monitor the DOM for additions/changes
 // @see https://developer.mozilla.org/en-US/docs/Web/API/MutationObserver.
 const observer = new MutationObserver((mutations) => {
   mutations.forEach((mutation) => {
@@ -97,3 +90,4 @@ observer.observe(document.body, {
   childList: true,
   subtree: true
 });
+

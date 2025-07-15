@@ -1,26 +1,22 @@
 
 const rules = [
-  emdash
+  emdash,
+  overused_words,
+  sentence_structures,
+  ro3,
 ];
 
-function judge(text_in) {
-
-
-  let text = text_in.trim();
-  if (text.length < 32) {
-    return 0; // don't judge short strings
-  }
+function judge(text) {
 
   let score = 0;
-  let weigth = 0;
   // to compute a better probability of 'being AI-generated'
   // with several 'OR' metrics, compute the reverse score (so it
   // makes sense to add it up), and finally re-reverse it
-  for (const rule of rules) {
-    score += (100 - rule.apply(text)) * rule.weight;
-    weigth += rule.weight;
+  for (let rule of rules) {
+    score += rule.apply(text) * rule.weight;
   }
-  return 100 - (score / weigth);
+  console.log("bandaid score: " + score);
+  return score;
 }
 
 /**
@@ -33,6 +29,7 @@ function judge(text_in) {
  */
 function replaceText(node) {
   // We don't want to alter the DOM aside for text-node markers
+  let content = "";
   if (node.nodeType === Node.TEXT_NODE) {
     // This node only contains text.
 
@@ -42,8 +39,26 @@ function replaceText(node) {
       return;
     }
 
-    let content = node.textContent;
+    content = node.textContent.toLowerCase();
+    if (content.length < 256) {
+      return content; // don't judge short strings on their own
+      // but rather, try to combine them with their siblings
+    }
 
+  } else {
+    // This node contains more than just text, call replaceText() on each
+    // of its (original) children (don't run replaceText over nodes
+    // created in replaceText()! )
+    let originNodes = []
+    for (let i = 0; i < node.childNodes.length; i++) {
+      originNodes.push(node.childNodes[i])
+    }
+    for (const node of originNodes) {
+      content += replaceText(node);
+    }
+  }
+
+  if (content.length >= 256) {
     // "percentage" of likeliness to be AI-generated (relatively arbitrary)
     let aid = judge(content);
 
@@ -53,20 +68,10 @@ function replaceText(node) {
       let marker = document.createTextNode("⚠️");
       parentNode.insertBefore(marker, node);
     }
-
+  } else {
+    return content;
   }
-  else {
-    // This node contains more than just text, call replaceText() on each
-    // of its (original) children (don't run replaceText over nodes
-    // created in replaceText()! )
-    let originNodes = []
-    for (let i = 0; i < node.childNodes.length; i++) {
-      originNodes.push(node.childNodes[i])
-    }
-    for (const node of originNodes) {
-      replaceText(node);
-    }
-  }
+  return "";
 }
 
 // Start the recursion from the body tag.

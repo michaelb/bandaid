@@ -10,6 +10,9 @@ const ro3 = {
     for (let sentence of sentences) {
       let parts = sentence.split(",");
       let nb_of_commas = parts.length - 1;
+      if (nb_of_commas < 2) {
+        continue;
+      }
       let has_and_or = (parts[1].includes("and") || parts[1].includes("or"));
       let has_and_or_not_just_after_comma = !(sentence.includes(", and") || sentence.includes(", or"));
 

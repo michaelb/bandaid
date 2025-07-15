@@ -48,7 +48,6 @@ const overused_words = {
       return 0;
     }
 
-    console.log("bandaid overused words");
 
     let rareWordCount = 0;
     for (let i = 0; i < wordsArray.length; i++) {
@@ -57,6 +56,7 @@ const overused_words = {
         rareWordCount += 1;
       }
     }
+    console.log("bandaid overused words: " + rareWordCount);
 
     // 1 occurence every 100 words should count for 
     // 10% suspiciousness, but max 50%

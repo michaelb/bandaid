@@ -12,7 +12,7 @@
   "content_scripts": [
     {
       "matches": ["<all_urls>"],
-      "js": ["rules/emdash.js","rules/rule_of_three.js","rules/sentence_structures.js","rules/overused_words.js", "./bandaid.js"]
+      "js": ["rules/emdash.js","rules/bullet_points.js","rules/rule_of_three.js","rules/sentence_structures.js","rules/overused_words.js", "./bandaid.js"]
     }
   ]
 }

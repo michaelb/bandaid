@@ -4,6 +4,7 @@ const rules = [
   overused_words,
   sentence_structures,
   ro3,
+  bullet_points,
 ];
 
 function judge(text) {
@@ -15,7 +16,7 @@ function judge(text) {
   for (let rule of rules) {
     score += rule.apply(text) * rule.weight;
   }
-  console.log("bandaid score: " + score);
+  console.log("bandaid score: " + score + " for text: " + text);
   return score;
 }
 
@@ -43,6 +44,9 @@ function replaceText(node) {
     if (content.length < 256) {
       return content; // don't judge short strings on their own
       // but rather, try to combine them with their siblings
+    } else if (content.length > 30000) {
+      // very long stuff, don't try to analyze it, it must not
+      // be something intended for a read
     }
 
   } else {
@@ -62,7 +66,10 @@ function replaceText(node) {
     // "percentage" of likeliness to be AI-generated (relatively arbitrary)
     let aid = judge(content);
 
-    if (aid > 50) {
+    let threshold = 50;
+    // be easy on small text to avoid false positives,
+    // but stricter on longer ones
+    if ((aid > threshold) || (aid > threshold / 2 && content.length > 500)) {
       // add a marker just before the text
       let parentNode = node.parentNode;
       let marker = document.createTextNode("⚠️");

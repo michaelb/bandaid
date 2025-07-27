@@ -15,7 +15,7 @@ const emdash = {
     }
     // 1 occurence every 500 chars should count for 
     // 10% suspiciousness, but max 70%
-    console.log("bandaid emdash couint : " + count);
+    console.log("bandaid emdash count : " + count);
     return Math.min(count * 500 / text.length * 10, 50);
 
   }

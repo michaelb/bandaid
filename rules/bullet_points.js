@@ -16,6 +16,7 @@ const bullet_points = {
     count += text.split("4. ").length - 1;
     count += text.split("5. ").length - 1;
     count += text.split("• ").length - 1;
+    count += text.split("🔹").length - 1;
 
     if (count < 10) {
       //more than 500 chars and less than 10 bullet point ?
@@ -27,7 +28,7 @@ const bullet_points = {
 
     // 10 bullet point every 7000 chars should count for 
     // 10% suspiciousness, but max 40%
-    console.log("bandaid buller ppoont couint : " + count + " , text elngth = " + text.length + ", text =" + text);
+    console.log("bandaid bullet point count : " + count + " , text length = " + text.length + ", text =" + text);
     return Math.min(count * 7000 / 10 / text.length * 10, 40);
 
   }

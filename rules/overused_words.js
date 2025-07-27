@@ -49,18 +49,33 @@ const overused_words = {
     }
 
 
+    // only counts occurences of 'suspicious' words once,
+    // to avoid flagging articles about topics that would obviously
+    // use one of these often (_physical_ activities, test _harness_)
     let rareWordCount = 0;
-    for (let i = 0; i < wordsArray.length; i++) {
-      let word = wordsArray[i];
-      if (wordlist.includes(word)) {
+    for (let i = 0; i < wordlist.length; i++) {
+      let word = wordlist[i];
+      if (wordsArray.includes(word)) {
+        rareWordCount += 1;
+        continue;
+      }
+      // with 's' at the end
+      word = word + "s";
+      if (wordsArray.includes(word)) {
         rareWordCount += 1;
       }
+
     }
     console.log("bandaid overused words: " + rareWordCount);
 
-    // 1 occurence every 100 words should count for 
+    // one or two occurences overall are forgiveable
+    if (rareWordCount <= 2) {
+      return 0;
+    }
+
+    // but each additional occurence every 200 words should count for 
     // 10% suspiciousness, but max 50%
-    return Math.min(rareWordCount * 100 / wordsArray.length * 10, 50);
+    return Math.min((rareWordCount - 2) * 200 / wordsArray.length * 10, 50);
 
   }
 }

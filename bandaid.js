@@ -1,3 +1,5 @@
+// silence all logs (comment during debugging)
+// console.log = function() { }
 
 const rules = [
   emdash,
@@ -12,19 +14,59 @@ function judge(text) {
 
   let score = 0;
   for (let rule of rules) {
-    score += rule.apply(text) * rule.weight;
+    let rule_score = rule.apply(text) * rule.weight;
+    if (rule_score > 0) {
+      console.log("bandaid score: " + rule_score + " due to rule: " + rule.name);
+    }
+    score += rule_score;
   }
-  console.log("bandaid score: " + score + " for text: " + text);
+  if (score > 0) {
+    console.log("bandaid score total: " + score + " for text: " + text);
+  }
   return score;
 }
 
 function normalize(text) {
   let normalized_text = text.toLowerCase().trim();
   if (normalized_text.length > 0) {
-    normalized_text += " ";
+    normalized_text += "\n";
   }
   return normalized_text.replaceAll("’", "'");
 }
+
+var styles = `
+/* Tooltip container */
+.tooltip {
+  position: relative;
+  display: inline-block;
+}
+
+/* Tooltip text */
+.tooltip .tooltiptext {
+  visibility: hidden;
+  width: 350px;
+  bottom: 100%;
+  left: 50%;
+  margin-left: -0px; /* Use half of the width (120/2 = 60), to center the tooltip */
+  background-color: black;
+  color: #fff;
+  text-align: center;
+  padding: 5px 0;
+  border-radius: 6px;
+ 
+  /* Position the tooltip text - see examples below! */
+  position: absolute;
+  z-index: 1;
+}
+
+/* Show the tooltip text when you mouse over the tooltip container */
+.tooltip:hover .tooltiptext {
+  visibility: visible;
+}
+`
+var styleSheet = document.createElement("style")
+styleSheet.textContent = styles
+document.head.appendChild(styleSheet)
 
 /**
  * Judge text nodes for AI-generated-ness
@@ -70,16 +112,30 @@ function replaceText(node) {
 
   if (content.length >= 256) {
     // "percentage" of likeliness to be AI-generated (relatively arbitrary)
-    let aid = judge(content);
+    let aid = Math.round(judge(content));
 
     let threshold = 50;
     // be easy on small text to avoid false positives,
     // but stricter on longer ones
-    if ((aid > threshold) || (aid > threshold / 2 && content.length > 500)) {
+    if (content.length > 500) {
+      threshold = 25
+    }
+
+    if ((aid > threshold)) {
       // add a marker just before the text
       let parentNode = node.parentNode;
+      let markerdiv = document.createElement("bandaid_marker");
       let marker = document.createTextNode("⚠️🩹⚠️");
-      parentNode.insertBefore(marker, node);
+      let tooltip_div = document.createElement("bandaid_tooltip");
+      let tooltip = document.createTextNode("bandaid detected the upcoming text is likely AI-generated (score " + aid + ", threshold = " + threshold + ")");
+      markerdiv.classList.add("tooltip");
+      tooltip_div.classList.add("tooltiptext");
+
+      tooltip_div.appendChild(tooltip);
+      markerdiv.appendChild(marker);
+      markerdiv.appendChild(tooltip_div);
+      markerdiv.className = "tooltip";
+      parentNode.insertBefore(markerdiv, node);
     }
   } else {
     return content;

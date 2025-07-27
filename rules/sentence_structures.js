@@ -1,4 +1,4 @@
-let list = [
+let list_sentence_structures = [
   "not just",
   "n't just",
   "not only",
@@ -9,6 +9,8 @@ let list = [
   "it is often though",
   "on the other hand",
   "one could argue",
+  "must also consider",
+  "must also be considered",
   "in conclusion"
 ]
 
@@ -25,7 +27,7 @@ const sentence_structures = {
     }
 
     let count = 0;
-    for (let sample of list) {
+    for (let sample of list_sentence_structures) {
       count += text.split(sample).length - 1;
     }
 

@@ -5,19 +5,25 @@ const rules = [
   sentence_structures,
   ro3,
   bullet_points,
+  giveaway
 ];
 
 function judge(text) {
 
   let score = 0;
-  // to compute a better probability of 'being AI-generated'
-  // with several 'OR' metrics, compute the reverse score (so it
-  // makes sense to add it up), and finally re-reverse it
   for (let rule of rules) {
     score += rule.apply(text) * rule.weight;
   }
   console.log("bandaid score: " + score + " for text: " + text);
   return score;
+}
+
+function normalize(text) {
+  let normalized_text = text.toLowerCase().trim();
+  if (normalized_text.length > 0) {
+    normalized_text += " ";
+  }
+  return normalized_text.replaceAll("’", "'");
 }
 
 /**
@@ -40,7 +46,7 @@ function replaceText(node) {
       return;
     }
 
-    content = node.textContent.toLowerCase();
+    content = normalize(node.textContent);
     if (content.length < 256) {
       return content; // don't judge short strings on their own
       // but rather, try to combine them with their siblings
@@ -72,7 +78,7 @@ function replaceText(node) {
     if ((aid > threshold) || (aid > threshold / 2 && content.length > 500)) {
       // add a marker just before the text
       let parentNode = node.parentNode;
-      let marker = document.createTextNode("⚠️");
+      let marker = document.createTextNode("⚠️🩹⚠️");
       parentNode.insertBefore(marker, node);
     }
   } else {

@@ -3,6 +3,11 @@ const ro3 = {
   description: "3-items 'A, B and C' statements",
   weight: 1,
   apply: function(text) {
+
+    if (text.length < 400) {
+      return 0;
+    }
+
     // return a 'probability' of being AI-generated between 1 and 100
     let sentences = text.split(".");
 

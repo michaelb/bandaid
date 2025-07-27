@@ -1,5 +1,5 @@
 // silence all logs (comment during debugging)
-// console.log = function() { }
+console.log = function() { }
 
 const rules = [
   emdash,

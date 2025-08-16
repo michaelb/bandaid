@@ -1,0 +1,26 @@
+<!doctype html>
+
+<html lang="en">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="color-scheme" content="dark light" />
+  </head>
+
+  <body>
+    <p>Bandaid uses rules that guess the likelihood of a text being AI-generated. These configurable threshold help to tune the 'sensibility' of bandaid: 0 will likely trigger several warnings in the human-written, while 100 will never trigger except on AI slop explicitely generated to include the highest number of telltale signs. Additionally, since short text paragraphs (less than 500 characters) could include a 'suspicious' frequency of AI-generated signs due to their 'short' nature rather than to their acutal quantity of signs, bandaid defines two thresholds, one for short text samples, and one for long. The detection threshold for longer text can be much lower, since false positives for longer texts are less frequent.</p>
+    <form>
+      <div>
+        <label for="dts">Detection threshold (short text)</label>
+        <input type="number" min="0" max="100" value='50'  id="dts" name="dts" />
+      </div>
+      <div>
+      <label for="dtl">Detection threshold (long text)</label>
+      <input type="number" min="0" max="100" value='25' id="dtl" name="dtl" />
+      </div>
+    <button type="submit">Save</button>
+    <button type="reset">Reset</button>
+    </form>
+    <script src="settings.js"></script>
+  </body>
+</html>
+

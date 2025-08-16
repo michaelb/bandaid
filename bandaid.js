@@ -1,5 +1,5 @@
 // silence all logs (comment during debugging)
-console.log = function() { }
+// console.log = function() { }
 
 const rules = [
   emdash,
@@ -114,33 +114,44 @@ function replaceText(node) {
     // "percentage" of likeliness to be AI-generated (relatively arbitrary)
     let aid = Math.round(judge(content));
 
-    let threshold = 50;
-    // be easy on small text to avoid false positives,
-    // but stricter on longer ones
-    if (content.length > 500) {
-      threshold = 25
-    }
-
-    if ((aid > threshold)) {
-      // add a marker just before the text
-      let parentNode = node.parentNode;
-      let markerdiv = document.createElement("bandaid_marker");
-      let marker = document.createTextNode("⚠️🩹⚠️");
-      let tooltip_div = document.createElement("bandaid_tooltip");
-      let tooltip = document.createTextNode("bandaid detected the upcoming text is likely AI-generated (score " + aid + ", threshold = " + threshold + ")");
-      markerdiv.classList.add("tooltip");
-      tooltip_div.classList.add("tooltiptext");
-
-      tooltip_div.appendChild(tooltip);
-      markerdiv.appendChild(marker);
-      markerdiv.appendChild(tooltip_div);
-      markerdiv.className = "tooltip";
-      parentNode.insertBefore(markerdiv, node);
-    }
+    let thresholds = browser.storage.local.get(['dtl', 'dts']).then(
+      data => {
+        mark(node, aid, data.dts, data.dtl);
+      }).catch(error => {
+        console.log("error retrieving stored threshold" + e)
+        console.log("using the defautl thresholds : 50 for short text, 25 for long");
+        mark(node, aid, 50, 25);
+      })
   } else {
     return content;
   }
   return "";
+}
+
+function mark(node, aid, short_threshold, long_threshold) {
+  let threshold = short_threshold;
+  if (content.length > 500) {
+    threshold = long_threshold;
+  }
+
+  console.log("bandaid score threshold: " + threshold + ", aid = " + aid);
+
+  if ((aid > threshold)) {
+    // add a marker just before the text
+    let parentNode = node.parentNode;
+    let markerdiv = document.createElement("bandaid_marker");
+    let marker = document.createTextNode("⚠️🩹⚠️");
+    let tooltip_div = document.createElement("bandaid_tooltip");
+    let tooltip = document.createTextNode("bandaid detected the upcoming text is likely AI-generated (score " + aid + ", threshold = " + threshold + ")");
+    markerdiv.classList.add("tooltip");
+    tooltip_div.classList.add("tooltiptext");
+
+    tooltip_div.appendChild(tooltip);
+    markerdiv.appendChild(marker);
+    markerdiv.appendChild(tooltip_div);
+    markerdiv.className = "tooltip";
+    parentNode.insertBefore(markerdiv, node);
+  }
 }
 
 // Start the recursion from the body tag.

@@ -13,7 +13,7 @@ const ro3 = {
 
     let count = 0;
     for (let sentence of sentences) {
-      console.log("bandaid " + sentence)
+      // console.log("bandaid ro3 " + sentence)
       let parts = sentence.split(",");
       let nb_of_commas = parts.length - 1;
       if (nb_of_commas < 2) {

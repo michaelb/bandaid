@@ -1,5 +1,5 @@
 // silence all logs (comment during debugging)
-// console.log = function() { }
+console.log = function() { }
 
 const rules = [
   emdash,
@@ -89,7 +89,10 @@ function replaceText(node) {
     }
 
     content = normalize(node.textContent);
-    if (content.length < 256) {
+    if (content.length < 16) {
+      // do nothing at all,
+
+    } else if (content.length < 256) {
       return content; // don't judge short strings on their own
       // but rather, try to combine them with their siblings
     } else if (content.length > 30000) {
@@ -110,13 +113,13 @@ function replaceText(node) {
     }
   }
 
-  if (content.length >= 256) {
+  if (content.length >= 256 && content.length <= 30000) {
     // "percentage" of likeliness to be AI-generated (relatively arbitrary)
     let aid = Math.round(judge(content));
 
-    let thresholds = browser.storage.local.get(['dtl', 'dts']).then(
+    browser.storage.local.get(['dtl', 'dts']).then(
       data => {
-        mark(node, aid, data.dts, data.dtl);
+        mark(node, aid, data.dts, data.dtl, content);
       }).catch(error => {
         console.log("error retrieving stored threshold" + e)
         console.log("using the defautl thresholds : 50 for short text, 25 for long");
@@ -128,15 +131,16 @@ function replaceText(node) {
   return "";
 }
 
-function mark(node, aid, short_threshold, long_threshold) {
+function mark(node, aid, short_threshold, long_threshold, content) {
   let threshold = short_threshold;
   if (content.length > 500) {
     threshold = long_threshold;
   }
 
-  console.log("bandaid score threshold: " + threshold + ", aid = " + aid);
+  console.log("bandaid score threshold: " + threshold + ", aid = " + aid + " for text of len " + content.length);
 
-  if ((aid > threshold)) {
+  if ((aid >= threshold)) {
+    console.log("bandaid ai-generated found, marking as such")
     // add a marker just before the text
     let parentNode = node.parentNode;
     let markerdiv = document.createElement("bandaid_marker");

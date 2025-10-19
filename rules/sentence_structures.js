@@ -2,6 +2,8 @@ let list_sentence_structures = [
   "not just",
   "n't just",
   "not only",
+  "not simply",
+  "n't simply",
   "but also",
   "or even",
   "in addition",
